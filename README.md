@@ -1,5 +1,7 @@
 # AJS: AI-Powered JavaScript Reverse Engineering Assistant
 
+> **Fork Version Notice**: This is an enhanced fork of the original AJS project with additional security improvements, caching mechanisms, and logging capabilities. See [README_SECURITY.md](README_SECURITY.md) for security configuration guidelines.
+
 WARNING！！！LOTS OF VIBE CODING！！
 
 **AJS** is a specialized tool designed to assist security researchers and developers in understanding and reverse-engineering complex, obfuscated front-end JavaScript, with a primary focus on cryptographic functions.
@@ -54,9 +56,16 @@ google-chrome --remote-debugging-port=9222
 ```
 
 ### 3. Configure AJS
+Copy the configuration template and customize it:
+```bash
+cp config.template.yaml config.yaml
+```
+
 Edit the `config.yaml` file:
 - **`whitelist_domains`**: **(IMPORTANT)** Add the domains you intend to analyze (e.g., `example.com`, `localhost`). This is a crucial security measure.
 - **`llm_service.api_config`**: Configure the `base_url`, `model_name`, and `api_key` for your chosen LLM service.
+
+**Security Note**: Never commit your actual `config.yaml` file to version control. The template uses safe placeholder values.
 
 ### 4. Run AJS
 ```bash
