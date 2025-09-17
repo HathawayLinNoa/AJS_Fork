@@ -1,6 +1,13 @@
-# AJS: AI-Powered JavaScript Reverse Engineering Assistant
+AJS优化版本
 
-> **Fork Version Notice**: This is an enhanced fork of the original AJS project with additional security improvements, caching mechanisms, and logging capabilities. See [README_SECURITY.md](README_SECURITY.md) for security configuration guidelines.
+1) 单一长日志 →  拆分为<post日志>和<响应日志> // 方便多个AI模型交叉验证分析复杂JS代码;
+2) 监听mouseover鼠标移动事件 →  滚动scroll&wheel事件  //  部分网站鼠标移动事件会触发JS导致终端检测内容过多消耗token，有需要的话再config中重新添加即可;
+3) LLM缓存提示  //原本问题：相同JS代码发送给分析AI，AI将返回和原本一致内容；改进：通过新增提示词 让AI告知用户这是缓存，可能是同一事件，顺便还会double check看下之前对JS的分析有没有问题,简洁回复,避免LLM API Token浪费;
+4) 傻狗AI把我API KEY和监听域名白名单push上来了,中间为了处理,又弄了个孤立提交,删了那个fork重新来,真tm得好好学学git
+
+##  以下为原项目readme
+
+# AJS: AI-Powered JavaScript Reverse Engineering Assistant
 
 WARNING！！！LOTS OF VIBE CODING！！
 
