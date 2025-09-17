@@ -149,9 +149,25 @@ class InteractionWorker:
         code_hash = hashlib.md5(code_snippet.encode('utf-8')).hexdigest()
         if code_hash in self.analysis_cache:
             cached_result = self.analysis_cache[code_hash]
-            self.logger.info(f"使用缓存的分析结果，URL: {url}")
-            self._print_analysis_result(url, debug_event.get('function_name', 'anonymous'), cached_result, True)
-            return
+            self.logger.info(f"发现缓存结果，进行AI double check验证，URL: {url}")
+            
+            # 使用简化的double check提示词，节省token
+            prompt = get_js_re_prompt(code_snippet, variables, url, network_data, js_hook_events, full_context, call_stack, cached_result)
+            try:
+                double_check_response = await self._call_llm(prompt)
+                if double_check_response and "验证通过" not in double_check_response:
+                    # AI发现了问题，使用新的分析结果
+                    enhanced_result = self._enhance_result_with_static_analysis(double_check_response, code_snippet)
+                    self.analysis_cache[code_hash] = enhanced_result  # 更新缓存
+                    self._print_analysis_result(url, debug_event.get('function_name', 'anonymous'), enhanced_result, False)
+                else:
+                    # AI确认缓存结果正确
+                    self._print_analysis_result(url, debug_event.get('function_name', 'anonymous'), cached_result, True)
+                return
+            except Exception as e:
+                self.logger.warning(f"缓存double check失败，使用原缓存结果: {e}")
+                self._print_analysis_result(url, debug_event.get('function_name', 'anonymous'), cached_result, True)
+                return
 
         # 4. 调用AI
         prompt = get_js_re_prompt(code_snippet, variables, url, network_data, js_hook_events, full_context, call_stack)

@@ -2,7 +2,7 @@ import json
 import re
 from typing import List, Dict, Any
 
-def get_js_re_prompt(code_snippet: str, variables: Dict[str, Any], url: str, network_data: List[Dict] = None, js_hook_events: List[Dict] = None, analysis_context: Dict = None, call_stack: List[str] = None) -> str:
+def get_js_re_prompt(code_snippet: str, variables: Dict[str, Any], url: str, network_data: List[Dict] = None, js_hook_events: List[Dict] = None, analysis_context: Dict = None, call_stack: List[str] = None, cached_result: str = None) -> str:
     """
     构建一个专门用于JS逆向工程分析的提示词。
     
@@ -13,7 +13,13 @@ def get_js_re_prompt(code_snippet: str, variables: Dict[str, Any], url: str, net
         network_data: 网络数据列表
         js_hook_events: JS钩子事件列表
         analysis_context: 分析上下文
+        call_stack: 函数调用栈
+        cached_result: 缓存的分析结果（如果存在）
     """
+
+    # 如果有缓存结果，返回简化的double check提示词
+    if cached_result:
+        return get_cache_double_check_prompt(cached_result, code_snippet, url)
 
     variable_list = []
     for name, value in variables.items():
@@ -216,4 +222,46 @@ def get_js_re_prompt(code_snippet: str, variables: Dict[str, Any], url: str, net
         "```"
     ]
 
+    return "\n".join(prompt_lines)
+
+
+def get_cache_double_check_prompt(cached_result: str, code_snippet: str, url: str) -> str:
+    """
+    为缓存结果创建简化的double check提示词，节省token
+    
+    Args:
+        cached_result: 缓存的分析结果
+        code_snippet: JavaScript代码片段
+        url: 目标URL
+    """
+    
+    prompt_lines = [
+        "你是JavaScript逆向工程专家。",
+        "",
+        "**重要提示：这是缓存的分析结果**",
+        f"- 网站: `{url}`",
+        "- 以下分析结果来自缓存，请进行double check验证",
+        "- 如果发现明显错误或遗漏，请指出并提供修正",
+        "- 如果分析基本正确，请简短确认",
+        "",
+        "**原始代码片段**",
+        "```javascript",
+        code_snippet[:500] + ("..." if len(code_snippet) > 500 else ""),  # 限制代码长度节省token
+        "```",
+        "",
+        "**缓存的分析结果**",
+        cached_result,
+        "",
+        "**你的任务**",
+        "1. 快速检查分析结果的准确性",
+        "2. 如有错误或重要遗漏，请指出并修正",
+        "3. 如果基本正确，请回复：\"分析结果验证通过，无需修正\"",
+        "4. 保持回复简洁，节省token消耗",
+        "",
+        "**输出要求**",
+        "- 简洁回复，避免重复已有的正确分析",
+        "- 只指出错误或补充重要遗漏信息",
+        "- 如需修正，提供修正后的JSON结果"
+    ]
+    
     return "\n".join(prompt_lines)
