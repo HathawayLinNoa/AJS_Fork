@@ -12,7 +12,7 @@ import os
 
 async def log_ai_dialogue(prompt: str, response: str, log_file_path: str) -> None:
     """
-    异步记录AI对话到JSONL文件
+    异步记录AI对话到JSONL文件，分别记录prompt和response
     
     Args:
         prompt: 发送给AI的提示词
@@ -23,18 +23,27 @@ async def log_ai_dialogue(prompt: str, response: str, log_file_path: str) -> Non
         # 确保日志目录存在
         os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
         
-        # 构建日志条目
-        log_entry = {
-            "timestamp": datetime.now().isoformat(),
-            "prompt": prompt,
-            "response": response,
-            "prompt_length": len(prompt),
-            "response_length": len(response)
+        timestamp = datetime.now().isoformat()
+        
+        # 分别记录prompt和response
+        prompt_entry = {
+            "timestamp": timestamp,
+            "type": "prompt",
+            "content": prompt,
+            "length": len(prompt)
+        }
+        
+        response_entry = {
+            "timestamp": timestamp,
+            "type": "response", 
+            "content": response,
+            "length": len(response)
         }
         
         # 异步追加到文件
         async with aiofiles.open(log_file_path, mode='a', encoding='utf-8') as f:
-            await f.write(json.dumps(log_entry, ensure_ascii=False) + '\n')
+            await f.write(json.dumps(prompt_entry, ensure_ascii=False) + '\n')
+            await f.write(json.dumps(response_entry, ensure_ascii=False) + '\n')
             
     except Exception as e:
         # 日志记录失败不应该影响主流程，但应打印错误

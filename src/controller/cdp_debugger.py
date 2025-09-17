@@ -246,7 +246,7 @@ class CDPDebugger:
             self.logger.info(f"页面 {page.url} (会话: {session_id}) 已完全加载，设置断点中...")
             await session.send('Network.enable')
             
-            for event_name in ['click', 'submit', 'input', 'change', 'keydown', 'mouseover', 'focus']:
+            for event_name in ['click', 'submit', 'input', 'change', 'keydown', 'focus', 'scroll', 'wheel']:
                 try: await session.send('DOMDebugger.setEventListenerBreakpoint', {'eventName': event_name})
                 except Exception as e: self.logger.warning(f"设置 {event_name} 事件断点失败: {e}")
             
